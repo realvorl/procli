@@ -1,97 +1,92 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 
-	bubbletea "github.com/charmbracelet/bubbletea"
-	"github.com/fatih/color"
+	"github.com/realvorl/procli/pkg"
 	"github.com/spf13/cobra"
 )
 
-type wizardModel struct {
-	step           int
-	projectName    string
-	requiredTools  []string
-	envVars        []string
-	tokens         []string
-	versionControl string
-	done           bool
-}
-
-// Messages for Bubble Tea
-type tickMsg struct{}
-type inputMsg string
-
-func (m wizardModel) Init() bubbletea.Cmd {
-	return nil
-}
-
-func (m wizardModel) Update(msg bubbletea.Msg) (bubbletea.Model, bubbletea.Cmd) {
-	switch msg := msg.(type) {
-	case bubbletea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, bubbletea.Quit
-		}
-	case inputMsg:
-		switch m.step {
-		case 0:
-			m.projectName = string(msg)
-		case 1:
-			m.requiredTools = parseCommaSeparated(string(msg))
-		case 2:
-			m.envVars = parseCommaSeparated(string(msg))
-		case 3:
-			m.tokens = parseCommaSeparated(string(msg))
-		case 4:
-			m.versionControl = string(msg)
-			m.done = true
-		}
-		m.step++
-	}
-
-	return m, nil
-}
-
-func (m wizardModel) View() string {
-	if m.done {
-		return fmt.Sprintf("Setup complete! Project: %s\nPress q to quit.", m.projectName)
-	}
-
-	switch m.step {
-	case 0:
-		return "Enter project name: "
-	case 1:
-		return "Enter required tools (comma-separated): "
-	case 2:
-		return "Enter environment variables (comma-separated): "
-	case 3:
-		return "Enter required tokens (comma-separated): "
-	case 4:
-		return "Enter version control system (e.g., git): "
-	}
-
-	return "Unexpected step. Press q to quit."
-}
-
-func parseCommaSeparated(input string) []string {
-	var result []string
-	for _, item := range strings.Split(input, ",") {
-		result = append(result, strings.TrimSpace(item))
-	}
-	return result
-}
-
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Create a new project configuration",
+	Short: "Add a new project to the configuration",
 	Run: func(cmd *cobra.Command, args []string) {
-		initialModel := wizardModel{}
-		p := bubbletea.NewProgram(initialModel)
-		if err := p.Start(); err != nil {
-			fmt.Println(color.RedString("Error starting wizard: %s", err))
+		reader := bufio.NewReader(os.Stdin)
+
+		// Load existing configuration
+		config := pkg.LoadConfig()
+
+		// Prompt for project name
+		fmt.Print("Enter project name: ")
+		projectName, _ := reader.ReadString('\n')
+		projectName = strings.TrimSpace(projectName)
+
+		// Check if the project already exists
+		if _, exists := config.Projects[projectName]; exists {
+			fmt.Println("Project already exists in the configuration.")
+			return
 		}
+
+		fmt.Print("Do you want to set this as the default project? (y/n): ")
+		setDefault, _ := reader.ReadString('\n')
+		if strings.ToLower(strings.TrimSpace(setDefault)) == "y" {
+			config.DefaultProject = projectName
+			fmt.Printf("Default project set to '%s'.\n", projectName)
+		}
+
+		// Create new project configuration
+		projectConfig := pkg.ProjectConfig{}
+
+		// Ask if tools are needed
+		fmt.Print("Does your project use tools? (y/n): ")
+		usesTools, _ := reader.ReadString('\n')
+		if strings.ToLower(strings.TrimSpace(usesTools)) == "y" {
+			fmt.Print("Enter required tools (comma-separated): ")
+			tools, _ := reader.ReadString('\n')
+			projectConfig.RequiredTools = pkg.ParseCommaSeparated(tools)
+		}
+
+		// Ask if environment variables are needed
+		fmt.Print("Does your project use environment variables? (y/n): ")
+		usesEnvVars, _ := reader.ReadString('\n')
+		if strings.ToLower(strings.TrimSpace(usesEnvVars)) == "y" {
+			fmt.Print("Enter environment variables (comma-separated): ")
+			envVars, _ := reader.ReadString('\n')
+			projectConfig.EnvironmentVars = pkg.ParseCommaSeparated(envVars)
+		}
+
+		// Ask if tokens are needed
+		fmt.Print("Does your project use tokens? (y/n): ")
+		usesTokens, _ := reader.ReadString('\n')
+		if strings.ToLower(strings.TrimSpace(usesTokens)) == "y" {
+			fmt.Print("Enter required tokens (comma-separated): ")
+			tokens, _ := reader.ReadString('\n')
+			projectConfig.RequiredTokens = pkg.ParseCommaSeparated(tokens)
+		}
+
+		// Ask if version control is needed
+		fmt.Print("Does your project use version control? (y/n): ")
+		usesVCS, _ := reader.ReadString('\n')
+		if strings.ToLower(strings.TrimSpace(usesVCS)) == "y" {
+			fmt.Print("Enter version control system (e.g., git): ")
+			vcs, _ := reader.ReadString('\n')
+			projectConfig.VersionControl = strings.TrimSpace(vcs)
+		}
+
+		// Add to projects
+		config.Projects[projectName] = projectConfig
+
+		// Save configuration
+		err := pkg.SaveConfig(config)
+		if err != nil {
+			fmt.Println("Error saving configuration:", err)
+			return
+		}
+
+		fmt.Println("Project configuration saved!")
 	},
 }
 
