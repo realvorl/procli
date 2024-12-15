@@ -29,3 +29,7 @@ vendor/
 # Go specific files
 *.mod.cache
 *.sum
+
+# additional files
+*.zip
+update-for-you

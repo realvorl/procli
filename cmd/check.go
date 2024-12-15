@@ -14,14 +14,17 @@ var checkCmd = &cobra.Command{
 	Use:   "check [project]",
 	Short: "Check project prerequisites",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			fmt.Println(color.RedString("Please specify a project name."))
-			return
-		}
-		projectName := args[0]
-
-		// Load configuration
 		config := pkg.LoadConfig()
+		projectName := config.DefaultProject
+		if len(args) < 1 {
+			if config.DefaultProject == "" {
+				fmt.Println(color.RedString("No project specified and no default project set."))
+				return
+			}
+		} else {
+			projectName = args[0]
+		}
+		// Load configuration
 		project, exists := config.Projects[projectName]
 		if !exists {
 			fmt.Printf(color.RedString("Project '%s' not found in the configuration.\n"), projectName)
