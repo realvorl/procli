@@ -5,6 +5,7 @@
     <text text-anchor="middle" font-size="19" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" fill="#ffffff" x="73" y="50%" dy=".35em">proCLI</text>
 </svg>
 
+
 **ProCLI** is a command-line tool designed to help developers manage and validate project prerequisites. It simplifies the setup and ensures consistency by checking for required tools, environment variables, tokens, and version control systems.
 
 ---
@@ -57,12 +58,12 @@
 ### Initialize a Project
 Run the `init` command to create a new project configuration:
 ```bash
-./procli init
+procli init
 ```
 Example interaction:
 ```plaintext
 Enter project name: tensorflow
-Enter required tools (comma-separated): docker, python
+Enter required tools (comma-separated): clang-tidy, pylint, docker, bazel, python
 Enter environment variables (comma-separated): INDIVIDUAL_CLA, CORPORATE_CLA
 Enter required tokens (comma-separated): 
 Enter version control system (e.g., git): git
@@ -72,52 +73,16 @@ Project configuration saved!
 ### Validate a Project
 Run the `check` command to validate project prerequisites:
 ```bash
-./procli check <project-name>
+procli check <project-name>
 ```
 If a default project is configured, the project name can be omitted:
 ```bash
-./procli check
-```
-
-Example output:
-```plaintext
-Checking prerequisites for project: tensorflow
-
-Required Tools:
-✅ docker
-❌ python: Tool not found in PATH
-
-Environment Variables:
-✅ INDIVIDUAL_CLA
-❌ CORPORATE_CLA: Variable not set
-
-Version Control:
-✅ git
-
-Check complete!
-```
-
-### List Configurations
-To view the current configurations and their file location:
-```bash
-./procli list
+procli check
 ```
 
 Example output:
 
-```plaintext
-Configuration file location:
-/home/user/.config/procli/config.yaml
-
-Default Project:
-tensorflow
-
-Projects:
-- tensorflow
-  - Tools: docker, python
-  - Environment Variables: INDIVIDUAL_CLA, CORPORATE_CLA
-  - Version Control: git
-```
+![image](https://github.com/user-attachments/assets/1a82ff84-0256-4b97-bbde-33942914c997)
 
 ---
 
