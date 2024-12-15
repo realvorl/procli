@@ -1,0 +1,31 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output of build process
+procli
+
+# Test binary, build artifacts, and coverage data
+*.out
+*.test
+*.cover
+
+# Dependency directories
+vendor/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+*~
+
+# Go specific files
+*.mod.cache
+*.sum
