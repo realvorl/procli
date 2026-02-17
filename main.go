@@ -146,12 +146,20 @@ func (m model) updateList(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "up", "k":
-			if len(m.participants) > 0 && m.cursor > 0 {
-				m.cursor--
+			if len(m.participants) > 0 {
+				if m.cursor > 0 {
+					m.cursor--
+				} else {
+					m.cursor = len(m.participants) - 1
+				}
 			}
 		case "down", "j":
-			if len(m.participants) > 0 && m.cursor < len(m.participants)-1 {
-				m.cursor++
+			if len(m.participants) > 0 {
+				if m.cursor < len(m.participants)-1 {
+					m.cursor++
+				} else {
+					m.cursor = 0
+				}
 			}
 
 		case " ":
