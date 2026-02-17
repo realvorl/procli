@@ -2,126 +2,185 @@
     <rect width="29" height="24" fill="#000000" />
     <rect x="29" width="88" height="24" fill="#bb400c" />
     <text text-anchor="middle" font-weight="bold" font-size="15" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" fill="#ffffff" x="15" y="50%" dy=".35em">⚙️</text>
-    <text text-anchor="middle" font-size="19" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" fill="#ffffff" x="73" y="50%" dy=".35em">proCLI</text>
+    <text text-anchor="middle" font-size="19" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" fill="#ffffff" x="73" y="50%" dy=".35em">proCLEE</text>
 </svg>
 
+---
 
-**ProCLI** is a command-line tool designed to help developers manage and validate project prerequisites. It simplifies the setup and ensures consistency by checking for required tools, environment variables, tokens, and version control systems.
+**clee** or **proCLEE** is a terminal‑first **software project assistant** built in Go using **Bubble Tea**.
+
+It is designed to grow into a **modular, extensible TUI toolbox** for software teams: Scrum facilitation, project health checks, diagnostics ("project doctors"), and custom workflows — all from the terminal.
+
+The current codebase contains only the **first foundational brick**: a local, deterministic random chooser. Everything else will be layered on **only after full understanding and ownership** of each step.
 
 ---
 
-## Features
+## Vision
 
-- **Initialize Project Configurations**:
-  - Use the `init` command to interactively create a project configuration file.
-  - Supports specifying:
-    - Required tools
-    - Environment variables
-    - Tokens
-    - Version control systems
+`clee` aims to become:
 
-- **Validate Project Setup**:
-  - Use the `check` command to validate if the system meets the project prerequisites.
-  - Provides a clear, actionable output with success and failure indicators.
+* A **CLI/TUI assistant** for running software projects
+* Extensible via **modules / plugins** (conceptually, not dynamically loaded yet)
+* Opinionated where it helps, customizable where it matters
 
-- **Configuration Management**:
-  - Configuration files are stored locally in `~/.config/procli/config.yaml`.
-  - Supports multiple projects and a default project.
+Think:
 
----
+* **Scrum poker, standups, retros** (later)
+* **Project diagnostics** similar to `flutter doctor`, but:
 
-## Installation
+  * configurable
+  * project‑specific
+  * language / stack agnostic
 
-### Prerequisites
-- [Go](https://golang.org/dl/) 1.20 or later installed.
-
-### Clone and Build
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd procli
-   ```
-2. Build the binary:
-   ```bash
-   go build -o procli
-   ```
-
-3. Install `procli` 
-   ```bash
-   go install 
-   ```
+The terminal is the primary UI.
 
 ---
 
-## Usage
+## Current MVP (first brick)
 
-### Initialize a Project
-Run the `init` command to create a new project configuration:
+The current implementation is intentionally small. It exists to:
+
+* Establish the TUI foundation (Bubble Tea)
+* Define UX patterns we will reuse later
+* Ensure correctness, determinism, and understanding
+
+### What the MVP does
+
+* Manage a list of participants stored in a **simple text file**
+* Enable / disable participants via **checkboxes**
+* Add, edit, and delete names
+* Start a **random selection** with a visual animation
+* Pick a **truly random winner** (winner chosen first, animation is cosmetic)
+* Display a dedicated **Winner 🎉 screen**
+
+Everything runs **locally** in the terminal.
+
+---
+
+## Screens
+
+1. **Participant list**
+
+   * Arrow keys to navigate
+   * Checkbox per participant (included / excluded)
+
+2. **Edit screen**
+
+   * Add a new name
+   * Rename an existing one
+
+3. **Selection animation**
+
+   * Cursor cycles through enabled participants
+   * Slows down and lands on the pre‑selected winner
+
+4. **Winner screen**
+
+   * Displays: `winner 🎉 {name}`
+   * Return to list to run again
+
+---
+
+## Key bindings
+
+| Key            | Action                    |
+| -------------- | ------------------------- |
+| ↑ / ↓ or k / j | Move cursor               |
+| Space          | Toggle participant on/off |
+| a              | Add participant           |
+| e              | Edit participant          |
+| d / Backspace  | Delete participant        |
+| Enter          | Start random selection    |
+| q / Ctrl+C     | Quit                      |
+
+On the **Winner screen**:
+
+* `Enter` or `Esc` returns to the list
+
+---
+
+## Data storage
+
+Participants are stored in a plain text file:
+
+```
+~/.config/clee/participants.tsv
+```
+
+Format:
+
+```
+<enabled>\t<name>
+```
+
+Example:
+
+```
+1	Alice
+0	Bob
+1	Charlie
+```
+
+* `1` = enabled
+* `0` = disabled
+
+This format is intentionally simple and editable by hand.
+
+---
+
+## Build & run
+
+Requirements:
+
+* Go 1.20+
+
 ```bash
-procli init
-```
-Example interaction:
-```plaintext
-Enter project name: tensorflow
-Enter required tools (comma-separated): clang-tidy, pylint, docker, bazel, python
-Enter environment variables (comma-separated): INDIVIDUAL_CLA, CORPORATE_CLA
-Enter required tokens (comma-separated): 
-Enter version control system (e.g., git): git
-Project configuration saved!
+go mod tidy
+go build -o clee .
+./clee
 ```
 
-### Validate a Project
-Run the `check` command to validate project prerequisites:
+Or install into your Go bin directory:
+
 ```bash
-procli check <project-name>
-```
-If a default project is configured, the project name can be omitted:
-```bash
-procli check
-```
-
-Example output:
-
-![image](https://github.com/user-attachments/assets/1a82ff84-0256-4b97-bbde-33942914c997)
-
----
-
-## Configuration File Structure
-
-Configurations are stored as YAML in `~/.config/procli/config.yaml`. Example structure:
-```yaml
-default: tensorflow
-projects:
-  tensorflow:
-    required_tools:
-      - docker
-      - python
-    environment_vars:
-      - INDIVIDUAL_CLA
-      - CORPORATE_CLA
-    required_tokens: []
-    version_control: git
+go install .
 ```
 
 ---
 
-## Contributing
+## Design principles
 
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature-name`).
-3. Commit your changes (`git commit -m "Add feature"`).
-4. Push to the branch (`git push origin feature-name`).
-5. Open a Pull Request.
+These principles apply to the entire project:
 
----
+* **Foundation first** — no features without understanding
+* **Winner / result first, animation second** — logic must be correct
+* **Small composable bricks** — each feature stands alone
+* **Terminal as a first‑class UI**
+* **No premature complexity**
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+Feature growth is gated intentionally.
 
 ---
 
-## Roadmap
+## Roadmap (pinned, not implemented yet)
 
-- Integrate a TUI (using Bubble Tea) for project initialization and editing.
+The following are **explicitly out of scope for the current MVP**:
+
+* Scrum poker (multiple voting schemes)
+* TCP / socket networking
+* Session discovery & codes
+* Multi‑client coordination
+* Project diagnostics ("project doctors")
+* Plugin / module registry
+* WebAssembly / browser spectator UI
+* Reports / exports
+
+They will only be implemented after explicit confirmation.
+
+---
+
+## Status
+
+**Status:** foundational TUI brick complete and understood.
+
+This repository will evolve into a broader **software project assistant**, step by step, without skipping understanding.
