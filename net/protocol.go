@@ -29,3 +29,10 @@ type State struct {
 	Phase   string       `json:"phase"`
 	Clients []ClientInfo `json:"clients"`
 }
+
+type ErrorMessage struct {
+	Type    string `json:"type"`
+	Session string `json:"session"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}

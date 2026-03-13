@@ -58,6 +58,11 @@ func JoinServer(address string, session string, name string) error {
 			for _, c := range s.Clients {
 				fmt.Printf(" - %s\n", c.Name)
 			}
+		case "error":
+			var e ErrorMessage
+			json.Unmarshal(line, &e)
+			fmt.Printf("Server error: %s (%s)\n", e.Message, e.Code)
+			return nil
 
 		default:
 			fmt.Println("unknown message:", string(line))

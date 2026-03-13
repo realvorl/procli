@@ -17,10 +17,11 @@ type Client struct {
 }
 
 type Server struct {
-	Session string
-	Clients map[string]*Client
-	mu      sync.Mutex
-	nextID  int
+	Session   string
+	Clients   map[string]*Client
+	mu        sync.Mutex
+	nextID    int
+	nextGuest int
 }
 
 func NewServer(session string) *Server {
@@ -51,7 +52,6 @@ func (s *Server) Listen() error {
 		go s.handleConn(conn)
 	}
 }
-
 func (s *Server) handleConn(conn stdnet.Conn) {
 	reader := bufio.NewReader(conn)
 
@@ -75,6 +75,17 @@ func (s *Server) handleConn(conn stdnet.Conn) {
 		return
 	}
 
+	if join.Session != s.Session {
+		_ = writeJSONLine(conn, ErrorMessage{
+			Type:    "error",
+			Session: s.Session,
+			Code:    "invalid_session",
+			Message: "session code does not match",
+		})
+		_ = conn.Close()
+		return
+	}
+
 	client := s.registerClient(join.Name, conn)
 
 	fmt.Printf("Client joined: %s\n", client.Name)
@@ -88,11 +99,27 @@ func (s *Server) handleConn(conn stdnet.Conn) {
 		fmt.Println("broadcast state error:", err)
 		return
 	}
+
+	// --- keep connection open ---
+	for {
+		_, err := reader.ReadBytes('\n')
+		if err != nil {
+			fmt.Printf("Client disconnected: %s\n", client.Name)
+			s.removeClient(client.ID)
+			_ = conn.Close()
+			return
+		}
+	}
 }
 
 func (s *Server) registerClient(name string, conn stdnet.Conn) *Client {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if name == "" {
+		name = fmt.Sprintf("Guest_%d", s.nextGuest)
+		s.nextGuest++
+	}
 
 	id := fmt.Sprintf("c%d", s.nextID)
 	s.nextID++
@@ -105,6 +132,15 @@ func (s *Server) registerClient(name string, conn stdnet.Conn) *Client {
 
 	s.Clients[id] = client
 	return client
+}
+
+func (s *Server) removeClient(id string) {
+
+	s.mu.Lock()
+	delete(s.Clients, id)
+	s.mu.Unlock()
+
+	s.broadcastState()
 }
 
 func (s *Server) sendWelcome(client *Client) error {
