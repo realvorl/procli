@@ -1,127 +1,295 @@
-<svg height="24" width="117" xmlns="http://www.w3.org/2000/svg">
-    <rect width="29" height="24" fill="#000000" />
-    <rect x="29" width="88" height="24" fill="#bb400c" />
-    <text text-anchor="middle" font-weight="bold" font-size="15" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" fill="#ffffff" x="15" y="50%" dy=".35em">⚙️</text>
-    <text text-anchor="middle" font-size="19" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" fill="#ffffff" x="73" y="50%" dy=".35em">proCLI</text>
-</svg>
+# ⚙️ proCLI
 
+**proCLI** is a terminal-first toolkit for software projects.
 
-**ProCLI** is a command-line tool designed to help developers manage and validate project prerequisites. It simplifies the setup and ensures consistency by checking for required tools, environment variables, tokens, and version control systems.
+It helps teams **validate environments, coordinate work, and automate project operations** directly from the command line.
 
----
+The goal is simple:
 
-## Features
+> Turn project documentation and operational knowledge into executable tools.
 
-- **Initialize Project Configurations**:
-  - Use the `init` command to interactively create a project configuration file.
-  - Supports specifying:
-    - Required tools
-    - Environment variables
-    - Tokens
-    - Version control systems
+Instead of relying on onboarding docs and tribal knowledge, projects can encode their requirements directly into a CLI.
 
-- **Validate Project Setup**:
-  - Use the `check` command to validate if the system meets the project prerequisites.
-  - Provides a clear, actionable output with success and failure indicators.
+## Quick Demo
 
-- **Configuration Management**:
-  - Configuration files are stored locally in `~/.config/procli/config.yaml`.
-  - Supports multiple projects and a default project.
+Validate your development environment:
 
----
-
-## Installation
-
-### Prerequisites
-- [Go](https://golang.org/dl/) 1.20 or later installed.
-
-### Clone and Build
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd procli
-   ```
-2. Build the binary:
-   ```bash
-   go build -o procli
-   ```
-
-3. Install `procli` 
-   ```bash
-   go install 
-   ```
-
----
-
-## Usage
-
-### Initialize a Project
-Run the `init` command to create a new project configuration:
-```bash
-procli init
-```
-Example interaction:
-```plaintext
-Enter project name: tensorflow
-Enter required tools (comma-separated): clang-tidy, pylint, docker, bazel, python
-Enter environment variables (comma-separated): INDIVIDUAL_CLA, CORPORATE_CLA
-Enter required tokens (comma-separated): 
-Enter version control system (e.g., git): git
-Project configuration saved!
-```
-
-### Validate a Project
-Run the `check` command to validate project prerequisites:
-```bash
-procli check <project-name>
-```
-If a default project is configured, the project name can be omitted:
 ```bash
 procli check
 ```
 
-Example output:
+Start a Scrum poker session:
 
-![image](https://github.com/user-attachments/assets/1a82ff84-0256-4b97-bbde-33942914c997)
+```bash
+procli host-vote --story "JIRA-123 Fix login"
+```
 
----
+Join the session:
 
-## Configuration File Structure
+```bash
+procli join localhost --session PO3BMI --name Alice
+```
 
-Configurations are stored as YAML in `~/.config/procli/config.yaml`. Example structure:
-```yaml
-default: tensorflow
-projects:
-  tensorflow:
-    required_tools:
-      - docker
-      - python
-    environment_vars:
-      - INDIVIDUAL_CLA
-      - CORPORATE_CLA
-    required_tokens: []
-    version_control: git
+Example client output:
+
+```
+Session: PO3BMI
+Story: JIRA-123 Fix login
+
+Current clients:
+ - Alice
+ - Bob
+```
+
+## Project Status
+
+proCLI is an **early-stage project**.
+
+Current focus:
+
+- building a solid architecture
+- implementing collaboration tools
+- enabling project diagnostics
+
+The networking layer for Scrum poker is currently under active development.
+
+Contributions and feedback are welcome.
+
+## Vision
+
+The long-term goal of proCLI is to become a **terminal-native project assistant**.
+
+Instead of juggling multiple tools, developers should be able to run:
+
+```
+procli doctor
+```
+
+and immediately understand:
+
+- if their environment is ready
+- what tools are missing
+- how to fix issues
+- how to collaborate with their team
+
+proCLI aims to bring project operations directly into the terminal.
+
+## Good First Contributions
+
+Areas where contributions would be helpful:
+
+- voting mechanics for Scrum poker
+- vote reveal logic
+- Bubble Tea TUI for poker sessions
+- project diagnostic checks
+- documentation improvements
+
+Contributions are welcome.
+
+Typical workflow:
+
+```bash
+git checkout -b feature-name
+git commit
+git push
+```
+
+Open a pull request once your feature is ready.
+
+## Why proCLI exists
+
+Every software project has hidden operational rules:
+
+* required tools
+* environment variables
+* tokens and credentials
+* onboarding steps
+* development workflows
+* collaboration rituals
+
+These rules often live in:
+
+* READMEs
+* internal wiki pages
+* Slack threads
+* CI scripts
+* team knowledge
+
+Developers spend time **discovering these rules instead of coding**.
+
+**proCLI turns those rules into commands.**
+
+Example:
+
+```bash
+procli check
+```
+
+Instead of reading documentation, you get immediate feedback:
+
+```
+✔ docker installed
+✔ python version OK
+✖ missing environment variable: CORPORATE_CLA
+```
+
+The same philosophy applies to **team collaboration**.
+
+Why open a browser tool for Scrum poker when a terminal command could do it?
+
+```bash
+procli host-vote
 ```
 
 ---
 
-## Contributing
+## Experimental: Scrum Poker Sessions
 
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature-name`).
-3. Commit your changes (`git commit -m "Add feature"`).
-4. Push to the branch (`git push origin feature-name`).
-5. Open a Pull Request.
+proCLI includes an early prototype for **terminal-based Scrum poker sessions**.
+
+Start a session:
+
+```bash
+procli host-vote --story "JIRA-123 Fix login"
+```
+
+Example output:
+
+```
+Starting session PO3BMI on :32896
+```
+
+Join a session:
+
+```bash
+procli join localhost --session PO3BMI --name Alice
+```
+
+Client output:
+
+```
+Session: PO3BMI
+Story: JIRA-123 Fix login
+Current clients:
+ - Alice
+ - Bob
+```
+
+Current capabilities:
+
+* TCP session hosting
+* session code validation
+* client identity management
+* automatic guest naming
+* connection cleanup
+* shared session context
+* story broadcast
+
+Voting mechanics will be added next.
 
 ---
 
-## License
+# Architecture
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+proCLI is designed to grow without coupling features together.
+
+```
+cmd/    CLI commands
+core/   domain logic
+store/  persistence
+net/    networking
+ui/     terminal interfaces
+```
+
+Principles:
+
+* networking is UI-agnostic
+* domain logic is transport-independent
+* persistence is isolated
+* UI consumes domain state
+
+This architecture allows features like diagnostics, collaboration tools, and automation to evolve independently.
+
+---
+
+# Installation
+
+### Requirements
+
+* Go 1.20+
+
+### Build
+
+```bash
+git clone <repo>
+cd procli
+go build
+```
+
+### Install
+
+```bash
+go install
+```
 
 ---
 
 ## Roadmap
 
-- Integrate a TUI (using Bubble Tea) for project initialization and editing.
+proCLI is evolving into a **terminal-native project operations toolkit**.
+
+Planned capabilities include:
+
+### Scrum Poker
+
+* vote casting
+* vote reveal
+* vote schemes (Fibonacci, T-shirt)
+* remote relay server for distributed teams
+
+### Project Diagnostics
+
+Inspired by tools like:
+
+```
+flutter doctor
+cargo doctor
+```
+
+Example:
+
+```bash
+procli doctor
+```
+
+Projects will be able to define their own environment diagnostics.
+
+### Terminal UI
+
+Using **Bubble Tea** to provide interactive interfaces for:
+
+* Scrum poker
+* project configuration
+* diagnostics
+
+### Plugin System
+
+Projects will eventually be able to extend proCLI with custom checks and automation.
+
+## Philosophy
+
+proCLI embraces a **terminal-first approach** to development tooling.
+
+The terminal is universal:
+
+* works over SSH
+* works inside containers
+* works in remote environments
+* works everywhere developers already work
+
+Instead of replacing existing tools, proCLI aims to **compose them into a cohesive interface**.
+
+## License
+
+MIT License — see `LICENSE`.
+

@@ -24,10 +24,12 @@ type ClientInfo struct {
 }
 
 type State struct {
-	Type    string       `json:"type"`
-	Session string       `json:"session"`
-	Phase   string       `json:"phase"`
-	Clients []ClientInfo `json:"clients"`
+	Type       string       `json:"type"`
+	Session    string       `json:"session"`
+	Phase      string       `json:"phase"`
+	StoryTitle string       `json:"story_title"`
+	StoryURL   string       `json:"story_url,omitempty"`
+	Clients    []ClientInfo `json:"clients"`
 }
 
 type ErrorMessage struct {

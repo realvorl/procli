@@ -17,18 +17,23 @@ type Client struct {
 }
 
 type Server struct {
-	Session   string
-	Clients   map[string]*Client
-	mu        sync.Mutex
-	nextID    int
-	nextGuest int
+	Session    string
+	StoryTitle string
+	StoryURL   string
+	Clients    map[string]*Client
+	mu         sync.Mutex
+	nextID     int
+	nextGuest  int
 }
 
-func NewServer(session string) *Server {
+func NewServer(session string, storyTitle string, storyURL string) *Server {
 	return &Server{
-		Session: session,
-		Clients: make(map[string]*Client),
-		nextID:  1,
+		Session:    session,
+		StoryTitle: storyTitle,
+		StoryURL:   storyURL,
+		Clients:    make(map[string]*Client),
+		nextID:     1,
+		nextGuest:  1,
 	}
 }
 
@@ -167,14 +172,16 @@ func (s *Server) broadcastState() error {
 		})
 		conns = append(conns, c.Conn)
 	}
-	s.mu.Unlock()
 
 	state := State{
-		Type:    "state",
-		Session: s.Session,
-		Phase:   "lobby",
-		Clients: clients,
+		Type:       "state",
+		Session:    s.Session,
+		Phase:      "lobby",
+		StoryTitle: s.StoryTitle,
+		StoryURL:   s.StoryURL,
+		Clients:    clients,
 	}
+	s.mu.Unlock()
 
 	for _, conn := range conns {
 		if err := writeJSONLine(conn, state); err != nil {

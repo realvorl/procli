@@ -53,11 +53,21 @@ func JoinServer(address string, session string, name string) error {
 			var s State
 			json.Unmarshal(line, &s)
 
+			fmt.Println("Session:", s.Session)
+
+			if s.StoryTitle != "" {
+				fmt.Println("Story:", s.StoryTitle)
+			}
+			if s.StoryURL != "" {
+				fmt.Println("URL:", s.StoryURL)
+			}
+
 			fmt.Println("Current clients:")
 
 			for _, c := range s.Clients {
 				fmt.Printf(" - %s\n", c.Name)
 			}
+
 		case "error":
 			var e ErrorMessage
 			json.Unmarshal(line, &e)
