@@ -9,7 +9,7 @@ import (
 )
 
 func JoinServer(address string, session string, name string) error {
-	return JoinServerWithHandler(address, session, name, nil)
+	return JoinServerWithHandler(address, session, name, nil, nil)
 }
 
 type ClientEvent struct {
@@ -21,7 +21,7 @@ type ClientEvent struct {
 	Error   ErrorMessage
 }
 
-func JoinServerWithHandler(address string, session string, name string, handler func(ClientEvent)) error {
+func JoinServerWithHandler(address string, session string, name string, handler func(ClientEvent), outbound <-chan VoteMessage) error {
 	conn, err := stdnet.Dial("tcp", address)
 	if err != nil {
 		emitClientEvent(handler, ClientEvent{
@@ -63,6 +63,37 @@ func JoinServerWithHandler(address string, session string, name string, handler 
 	})
 
 	reader := bufio.NewReader(conn)
+	done := make(chan struct{})
+
+	if outbound != nil {
+		go func() {
+			for {
+				select {
+				case <-done:
+					return
+				case vote, ok := <-outbound:
+					if !ok {
+						return
+					}
+					vote.Type = "vote"
+					if err := writeJSONLine(conn, vote); err != nil {
+						emitClientEvent(handler, ClientEvent{
+							Kind:    "error",
+							Time:    time.Now(),
+							Message: fmt.Sprintf("send vote failed: %v", err),
+						})
+						return
+					}
+					emitClientEvent(handler, ClientEvent{
+						Kind:    "vote_sent",
+						Time:    time.Now(),
+						Message: fmt.Sprintf("vote sent: %s", vote.Vote),
+					})
+				}
+			}
+		}()
+	}
+	defer close(done)
 
 	for {
 		line, err := reader.ReadBytes('\n')
