@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
-	cleenet "github.com/realvorl/procli/net"
+	pokerui "github.com/realvorl/procli/ui/poker"
 )
 
 var joinName string
@@ -18,10 +16,7 @@ var joinCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		host := args[0]
 		address := host + ":32896"
-
-		fmt.Println("Joining", address)
-
-		return cleenet.JoinServer(address, joinSession, joinName)
+		return pokerui.RunClient(address, joinSession, joinName)
 	},
 }
 
